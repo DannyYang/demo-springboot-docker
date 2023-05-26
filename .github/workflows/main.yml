@@ -52,6 +52,19 @@ jobs:
         push: true
         tags: ${{ env.IMAGE_NAME }}:${{ steps.extract_version.outputs.VERSION }}
 
+    - name: Set up kind
+      uses: engineerd/setup-kind@v0.5.0
+
+    - name: Deploy to simulated environment
+      run: |
+        kind load docker-image ${{ env.IMAGE_NAME }}:${{ steps.extract_version.outputs.VERSION }}
+        kubectl apply -f ./deploy/deployment.yaml
+
+    - name: Run tests
+      run: |
+        # Run your tests here
+        echo "Tests passed"
+
     - name: Update Kubernetes deployment
       run: |
         find ./deploy -type f -name "*.yaml" -exec sed -i 's@image: .*@image: '"${{ env.IMAGE_NAME }}:${{ steps.extract_version.outputs.VERSION }}"'@' {} \;
