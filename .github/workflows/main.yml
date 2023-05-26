@@ -6,27 +6,20 @@ on:
       - '*'
 
 env:
-  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/demo_app
+  IMAGE_NAME: yjring/demo_app
   DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
   DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
   ACCESS_TOKEN: ${{ secrets.REPOSITORY_TOKEN }}
 
 jobs:
-  prepare:
+  build-and-push:
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.extract_version.outputs.VERSION }}
 
     steps:
     - name: Extract version
       id: extract_version
       run: echo "::set-output name=VERSION::$(echo ${GITHUB_REF#refs/tags/})"
-
-  build:
-    needs: prepare
-    runs-on: ubuntu-latest
     
-    steps:
     - name: Checkout code
       uses: actions/checkout@v2
       with: 
@@ -42,11 +35,6 @@ jobs:
     - name: Build with Maven
       run: mvn -B package --file pom.xml
 
-  docker:
-    needs: prepare
-    runs-on: ubuntu-latest
-
-    steps:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
 
@@ -62,22 +50,11 @@ jobs:
       with:
         context: .
         push: true
-        tags: ${{ env.IMAGE_NAME }}:${{ needs.prepare.outputs.version }}
-
-  deploy:
-    needs: [build, docker]
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with: 
-        ref: main
-        token: ${{ secrets.REPOSITORY_TOKEN }}
+        tags: ${{ env.IMAGE_NAME }}:${{ steps.extract_version.outputs.VERSION }}
 
     - name: Update Kubernetes deployment
       run: |
-        find ./deploy -type f -name "*.yaml" -exec sed -i 's@image: .*@image: '"${{ env.IMAGE_NAME }}:${{ needs.prepare.outputs.version }}"'@' {} \;
+        find ./deploy -type f -name "*.yaml" -exec sed -i 's@image: .*@image: '"${{ env.IMAGE_NAME }}:${{ steps.extract_version.outputs.VERSION }}"'@' {} \;
         cat ./deploy/deployment.yaml
 
     - name: Commit changes
@@ -85,5 +62,5 @@ jobs:
         git config --local user.email "yjring@gmail.com"
         git config --local user.name "DannyYang"
         git add ./deploy/*.yaml
-        git commit -m "Update image version to ${{ needs.prepare.outputs.version }}" -a
+        git commit -m "Update image version to ${{ steps.extract_version.outputs.VERSION }}" -a
         git push origin main
