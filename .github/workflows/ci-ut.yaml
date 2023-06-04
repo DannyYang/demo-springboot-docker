@@ -26,3 +26,10 @@ jobs:
 
     - name: Test with Maven
       run: mvn test
+
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action@v1
+      if: always() # always run this step to publish test results even when previous steps fail
+      with:
+        github_token: ${{ secrets.REPOSITORY_TOKEN }}
+        files: '**/target/surefire-reports/*.xml'
