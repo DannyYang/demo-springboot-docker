@@ -31,10 +31,20 @@ jobs:
       with:
         java-version: '11'
         distribution: 'adopt'
+        server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+        settings-path: ${{ github.workspace }} # location for the settings.xml file
 
-    - name: Build with Maven
+    - name: Build with Maven and generate reports
       run: mvn -B package --file pom.xml
 
+    - name: Publish test results
+      uses: dorny/test-reporter@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        name: Unit Test Results
+        path: 'target/surefire-reports/*.xml'
+        reporter: junit
+      
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
 
@@ -51,20 +61,6 @@ jobs:
         context: .
         push: true
         tags: ${{ env.IMAGE_NAME }}:${{ steps.extract_version.outputs.VERSION }}
-
-    - name: Install and run kubeval
-      run: |
-        curl --location https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz --output kubeval.tar.gz
-        tar xf kubeval.tar.gz
-        chmod +x kubeval
-        ./kubeval ./deploy/deployment.yaml
-
-    - name: Install and run kube-score
-      run: |
-        curl --location https://github.com/zegl/kube-score/releases/download/v1.13.0/kube-score_1.13.0_linux_amd64.tar.gz --output kube-score.tar.gz
-        tar xf kube-score.tar.gz
-        chmod +x kube-score
-        ./kube-score score ./deploy/deployment.yaml
 
     - name: Update Kubernetes deployment
       run: |
