@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: demo-app
-        image: yjring/demo_app:dev8a1ea1
+        image: yjring/demo_app:dev840d08
         ports:
         - containerPort: 8080
