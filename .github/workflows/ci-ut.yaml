@@ -8,7 +8,7 @@ on:
       - 'deploy/**'
 
 env:
-  IMAGE_NAME: demo_app
+  IMAGE_NAME: yjring/demo_app
   DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
   DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
   ACCESS_TOKEN: ${{ secrets.REPOSITORY_TOKEN }}
@@ -55,7 +55,7 @@ jobs:
       with:
         context: .
         push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ steps.extract_version.outputs.VERSION }}
+        tags: ${{ env.IMAGE_NAME }}:${{ steps.extract_version.outputs.VERSION }}
 
     - name: Update Kubernetes deployment
       run: |
@@ -63,9 +63,8 @@ jobs:
 
     - name: Commit changes
       run: |
-        echo ${{ env.ACCESS_TOKEN }}
-        git config --local user.email "yjring@gmail.com"
-        git config --local user.name "DannyYang"
+        git config --local user.email "bot"
+        git config --local user.name "bot"
         git add ./deploy/*.yaml
         git commit -m "Update image version to ${{ steps.extract_version.outputs.VERSION }}" -a
         git push origin main
