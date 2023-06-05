@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - '*'
+    paths-ignore:
+      - 'deploy/**'
 
 env:
   IMAGE_NAME: yjring/demo_app
@@ -34,7 +36,7 @@ jobs:
 
     - name: Build with Maven and generate reports
       run: mvn -B package --file pom.xml
-      
+
     - name: Test with Maven
       run: mvn test
       
