@@ -9,7 +9,7 @@ env:
   IMAGE_NAME: yjring/hello-gitops-app
   DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
   DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
-  ACCESS_TOKEN: ${{ secrets.REPOSITORY_TOKEN }}
+  ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   build-and-push:
