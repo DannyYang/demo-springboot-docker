@@ -12,7 +12,7 @@ public class HelloworldApplication {
   class HelloworldController {
     @GetMapping("/")
     String hello() {
-      return "Hello Actions! v2";
+      return "Hello GitOps v1.0";
     }
   }
 
